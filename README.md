@@ -296,3 +296,8 @@ For issues and questions:
 - Open an issue on GitHub
 - Check AWS Bedrock documentation
 - Review Anthropic API documentation
+
+## How to use with Claude Code
+
+1. `export ANTHROPIC_BASE_URL=<AWS Lambda function URL>`
+2. `export ANTHROPIC_AUTH_TOKEN=<AWS Lambda environment variable BEARER_TOKEN>`
