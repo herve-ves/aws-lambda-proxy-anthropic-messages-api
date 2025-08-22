@@ -1,0 +1,13 @@
+{
+  "headers": {
+    "authorization": "Bearer test-token",
+    "content-type": "application/json"
+  },
+  "requestContext": {
+    "http": {
+      "method": "POST"
+    }
+  },
+  "body": "{\"model\":\"anthropic.claude-3-5-sonnet-20241022-v2:0\",\"messages\":[{\"role\":\"user\",\"content\":\"Hello, Claude! Please respond with a brief greeting.\"}],\"max_tokens\":100}",
+  "isBase64Encoded": false
+}
