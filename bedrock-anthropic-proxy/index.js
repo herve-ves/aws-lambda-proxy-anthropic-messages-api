@@ -55,21 +55,7 @@ const sendErrorResponse = (responseStream, statusCode, message, type) => {
 };
 
 const createBedrockRequest = (requestBody) => {
-  if (true) {
-    return requestBody;
-  }
-  return {
-    model: requestBody.model || 'anthropic.claude-3-5-sonnet-20241022-v2:0',
-    max_tokens: requestBody.max_tokens || 4096,
-    messages: requestBody.messages,
-    system: requestBody.system,
-    temperature: requestBody.temperature,
-    top_p: requestBody.top_p,
-    top_k: requestBody.top_k,
-    stop_sequences: requestBody.stop_sequences,
-    metadata: requestBody.metadata,
-    stream: requestBody.stream === true,
-  };
+  return requestBody;
 };
 
 export const handler = awslambda.streamifyResponse(
@@ -117,9 +103,9 @@ export const handler = awslambda.streamifyResponse(
 
         const bedrockStream = await client.messages.create(bedrockRequest);
         for await (const chunk of bedrockStream) {
+          responseStream.write(`event: ${chunk.type}\n`);
           responseStream.write(`data: ${JSON.stringify(chunk)}\n\n`);
         }
-        responseStream.write('data: [DONE]\n\n');
         responseStream.end();
       } else {
         // Handle non-streaming response
