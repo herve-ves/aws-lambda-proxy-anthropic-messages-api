@@ -115,9 +115,12 @@ export const handler = awslambda.streamifyResponse(
     } catch (error) {
       console.error('Error calling Bedrock:', error);
 
-      // Check if we're in streaming mode and headers were already sent
-      if (bedrockRequest.stream && responseStream.headersSent) {
+      // Check if we're in streaming mode
+      if (bedrockRequest.stream) {
+        // In streaming mode, send error as SSE event
+        responseStream.write(`event: error\n`);
         responseStream.write(`data: ${JSON.stringify({
+          type: "error",
           error: {
             message: error.message || 'Internal server error',
             type: error.error?.type || 'api_error',
@@ -125,6 +128,7 @@ export const handler = awslambda.streamifyResponse(
         })}\n\n`);
         responseStream.end();
       } else {
+        // Not in streaming mode, can safely send error response
         sendErrorResponse(
           responseStream,
           error.status || 500,
