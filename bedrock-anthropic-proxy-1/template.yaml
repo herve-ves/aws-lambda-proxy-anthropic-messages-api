@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Bedrock Anthropic Proxy Lambda Function (TypeScript + Hono)
+
+Parameters:
+  BearerToken:
+    Type: String
+    Description: Bearer token for API authentication
+    NoEcho: true
+
+Globals:
+  Function:
+    Timeout: 300
+    MemorySize: 1024
+    Runtime: nodejs20.x
+    Environment:
+      Variables:
+        AWS_REGION: !Ref AWS::Region
+        BEARER_TOKEN: !Ref BearerToken
+
+Resources:
+  BedrockAnthropicProxyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: dist/handler.handler
+      Description: Lambda function to proxy Anthropic Messages API to AWS Bedrock (TypeScript + Hono, streaming + non-streaming)
+      Architectures:
+        - arm64
+      FunctionUrlConfig:
+        AuthType: NONE
+        InvokeMode: RESPONSE_STREAM
+        Cors:
+          AllowOrigins:
+            - "*"
+          AllowHeaders:
+            - Content-Type
+            - Authorization
+          AllowMethods:
+            - POST
+            - OPTIONS
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+                - bedrock:InvokeModelWithResponseStream
+              Resource: !Sub 'arn:aws:bedrock:*:${AWS::AccountId}:foundation-model/anthropic.claude-*'
+
+Outputs:
+  FunctionUrl:
+    Description: URL for both streaming and non-streaming requests
+    Value: !GetAtt BedrockAnthropicProxyFunctionUrl.FunctionUrl
