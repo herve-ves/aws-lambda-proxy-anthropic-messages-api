@@ -2,6 +2,7 @@ node_modules/
 
 dist/
 build/
+build-*/
 
 .env
 .DS_Store
