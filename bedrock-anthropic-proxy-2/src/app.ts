@@ -21,11 +21,29 @@ const client = new AnthropicBedrock({
 
 const app = new Hono<{ Variables: { requestId: string } }>();
 
-const log = (
-  level: 'debug' | 'info' | 'warn' | 'error',
-  msg: string,
-  meta?: Record<string, unknown>
-) => {
+type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+const LOG_LEVELS: Record<LogLevel, number> = {
+  debug: 0,
+  info: 1,
+  warn: 2,
+  error: 3,
+};
+
+const getLogLevel = (): LogLevel => {
+  const level = process.env.LOG_LEVEL?.toLowerCase();
+  if (level && level in LOG_LEVELS) {
+    return level as LogLevel;
+  }
+  return 'info';
+};
+
+const log = (level: LogLevel, msg: string, meta?: Record<string, unknown>) => {
+  const minLevel = getLogLevel();
+  if (LOG_LEVELS[level] < LOG_LEVELS[minLevel]) {
+    return;
+  }
+
   const output = { level, msg, ...meta };
   if (level === 'error') {
     console.error(JSON.stringify(output));
@@ -79,7 +97,7 @@ app.use('*', async (c, next) => {
   const bearerPrefix = 'Bearer ';
 
   if (!authHeader || !authHeader.startsWith(bearerPrefix)) {
-    log('warn', 'authorization header missing/invalid', { requestId });
+    log('warn', 'authorization header missing/invalid', { requestPath: c.req.path });
     return c.json({ error: { message: 'Unauthorized', type: 'authentication_error' } }, 401);
   }
 
